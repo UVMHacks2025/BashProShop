@@ -121,8 +121,8 @@ class StripeHandler:
                     },
                     "quantity": 1,
                 }],
-                success_url=DOMAIN + '/payment_success.html',
-                cancel_url=DOMAIN + '/payment_cancel.html',
+                success_url=DOMAIN + '/payment_success',
+                cancel_url=DOMAIN + '/payment_cancel',
             )
 
         except StripeError as e:

@@ -145,6 +145,16 @@ def checkout_session():
     return handler.create_checkout_session()
 
 
+@app.route("/payment_success", methods=["GET"])
+def payment_success():
+    return render_template("payment_success.html")
+
+
+@app.route("/payment_cancel", methods=["GET"])
+def payment_cancel():
+    return render_template("payment_cancel.html")
+
+
 @app.route("/create-listing", methods=['GET', 'POST'])
 @login_required
 def createlisting():
