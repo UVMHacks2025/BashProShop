@@ -49,10 +49,36 @@ def logout():
 
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
-    if (request.method == 'POST'):
-        data = request.get_json()
-        print(data)
-    if (request.method == 'GET'):
+    if request.method == 'POST':
+        first_name = request.form.get('firstName')
+        last_name = request.form.get('lastName')
+        email = request.form.get('email')
+        school = request.form.get('school')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirmPassword')
+
+        if password != confirm_password:
+            return jsonify({'message': 'Passwords do not match'}), 400
+
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return jsonify({'message': 'Email already registered'}), 400
+
+        user = User(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            school=school
+        )
+        user.password = password  #hash the password
+
+        db.session.add(user)
+        db.session.commit()
+
+        login_user(user)
+        return jsonify({'message': 'Signup successful'})
+
+    if request.method == 'GET':
         return render_template("signup.html")
 
 
