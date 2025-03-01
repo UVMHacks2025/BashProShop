@@ -35,9 +35,7 @@ def login():
         user = User.authenticate(email, password)
         if user:
             login_user(user, remember=remember)
-            return render_template('listings.html', 
-                                listings=Listing.get_next(10, [], [Listing.post_date]),
-                                message='Logged in successfully')
+            return redirect('/')
         return render_template('login.html', message='Invalid email or password')
     
     return render_template('login.html')
