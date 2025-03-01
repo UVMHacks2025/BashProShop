@@ -1,6 +1,4 @@
-# BashProShop
-
-To setup
+### Setup
 ```
 python -m venv .venv
 source .venv/bin/activate
