@@ -1,9 +1,9 @@
 import os
+from datetime import date
 
-import sqlalchemy as sq
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import BLOB, Date, ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, Integer, LargeBinary, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -39,7 +39,7 @@ class Listing(db.Model):
     name: Mapped[str]
     description: Mapped[str]
     price: Mapped[float]
-    post_date: Mapped[Date]
+    post_date: Mapped[date]
 
 
 class Order(db.Model):
@@ -47,7 +47,7 @@ class Order(db.Model):
     listing_id: Mapped[int] = mapped_column(ForeignKey("listing.id"))
     buyer_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     seller_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    date: Mapped[Date]
+    date: Mapped[date]
 
 
 class Interactions(db.Model):
@@ -67,4 +67,4 @@ class Image(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     listing_id: Mapped[int] = mapped_column(ForeignKey("listing.id"))
     name: Mapped[str]
-    encoded: Mapped[BLOB]
+    encoded: Mapped[LargeBinary] = mapped_column(LargeBinary, nullable=False)
