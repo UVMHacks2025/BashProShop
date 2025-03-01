@@ -42,6 +42,24 @@ def logout():
     logout_user()
     return jsonify({'message': 'Logged out successfully'})
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.authenticate(data.get('email'), data.get('password'))
+    if user:
+        login_user(user)
+        return jsonify({'message': 'Logged in successfully'})
+    return jsonify({'message': 'Invalid email or password'}), 401
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return jsonify({'message': 'Logged out successfully'})
 
 @app.route("/")
 def index():
