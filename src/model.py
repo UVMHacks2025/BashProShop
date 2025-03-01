@@ -84,12 +84,17 @@ class Listing(db.Model):
     price: Mapped[float]
     post_date: Mapped[date]
     duration: Mapped[Optional[int]]
+    start_date: Mapped[Optional[date]]
 
     @staticmethod
     # Condition isn't actually a type, but is of the form
     # MyClass.field == "value"
     def get_next(n: int, conditions: List['Condition'], orderings: List['Ordering']) -> List['Self']:
         return Listing.query.filter(*conditions).order_by(*orderings).limit(n).all()
+    
+    @staticmethod
+    def get_by_id(id: int) -> 'Listing':
+        return Listing.query.filter(Listing.id == id).first()
 
 
 class Order(db.Model):
@@ -119,6 +124,11 @@ class Image(db.Model):
     name: Mapped[str]
     encoded: Mapped[LargeBinary] = mapped_column(LargeBinary, nullable=False)
 
+    @staticmethod
+    def get_for(listing: Listing) -> List['Self']:
+        return Image.query \
+            .filter(Image.listing_id == listing.id) \
+            .all()
 
 def insert_test_data(db):
     """

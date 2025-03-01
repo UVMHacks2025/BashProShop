@@ -1,7 +1,11 @@
 <article class="col-2 d-flex flex-column p-2 border rounded">
   <div class="ratio ratio-1x1 mb-2">
-    <img alt="" src="{{ listing['encoded'] | default('static/default.jpg') }}" />
+    {% if listing.imgsrc %}
+      <img alt="listing image" src="{{ listing.imgsrc }}" class="img-fluid rounded" />
+    {% else %}
+      <img alt="listing image" src="/static/default.jpg" class="img-fluid rounded" />
+    {% endif %}
   </div>
-  <h5>{{ listing["price"] }}</h5>
-  <h6>{{ listing["name"] }}</h6>
+  <h5>${{ listing.price }}</h5>
+  <h6>{{ listing.name }}</h6>
 </article>
