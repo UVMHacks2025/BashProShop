@@ -56,7 +56,8 @@ def signup():
 
 @app.route("/")
 def listings():
-    return render_template("listings.html")
+    listings = Listing.get_next(10, [], [Listing.post_date])
+    return render_template("listings.html", listings=listings)
 
 
 @app.route("/create-listing", methods = ['GET', 'POST'])
