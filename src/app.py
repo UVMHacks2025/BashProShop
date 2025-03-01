@@ -21,6 +21,9 @@ app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -207,6 +210,7 @@ if __name__ == "__main__":
         user = User.get_by_id(1)
         print(user)
         print(user.get_listings())
-        print(Listing.get_next(10, [], [Listing.post_date]))
+        print(Listing.get_next(0, 5, [], [Listing.post_date]))
+        print(Listing.get_next(1, 5, [], [Listing.post_date]))
 
     app.run(debug=True)
