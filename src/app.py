@@ -4,11 +4,15 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from datetime import timedelta
 
 from model import init_db, User
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bashproshop'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7) 
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)   
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -21,7 +25,8 @@ def login():
     data = request.get_json()
     user = User.authenticate(data.get('email'), data.get('password'))
     if user:
-        login_user(user)
+        remember = data.get('remember', False)  # Get remember preference from request
+        login_user(user, remember=remember)
         return jsonify({'message': 'Logged in successfully'})
     return jsonify({'message': 'Invalid email or password'}), 401
 
