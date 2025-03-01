@@ -51,7 +51,8 @@ def login():
     data = request.get_json()
     user = User.authenticate(data.get('email'), data.get('password'))
     if user:
-        login_user(user)
+        remember = data.get('remember', False)  # Get remember preference from request
+        login_user(user, remember=remember)
         return jsonify({'message': 'Logged in successfully'})
     return jsonify({'message': 'Invalid email or password'}), 401
 
