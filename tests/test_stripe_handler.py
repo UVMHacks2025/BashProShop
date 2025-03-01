@@ -2,6 +2,7 @@ import pytest
 from src.stripe_handler import StripeHandler
 from src.app import app
 import stripe
+from unittest.mock import patch, MagicMock
 from dotenv import load_dotenv
 
 @pytest.fixture
@@ -146,3 +147,42 @@ def test_create_checkout_session(setUp):
             assert session.mode == "payment"
             assert session.success_url == "https://example.com/success"
             assert session.cancel_url == "https://example.com/cancel"
+
+def test_check_checkout_session(setUp):
+    with app.app_context():
+        # create a checkout session
+        stripe_handler = setUp
+        customer_instance = stripe_handler.create_customer({
+            "email": "test@test.com",
+            "name": "Test User",
+        })
+        session = stripe_handler.create_checkout_session(customer_instance.id, "https://example.com/success", "https://example.com/cancel")
+        # check the session
+        results = stripe_handler.check_checkout_session(session.id)
+        assert results[0] == session
+        assert results[1] == "open"
+
+def test_handle_unsuccessful_payment(setUp):
+    with app.app_context():
+        stripe_handler = setUp
+        customer_instance = stripe_handler.create_customer({
+            "email": "test@test.com",
+            "name": "Test User",
+        })
+        session = stripe_handler.create_checkout_session(customer_instance.id, "https://example.com/success", "https://example.com/cancel")
+        # check the session
+        results = stripe_handler.check_checkout_session(session.id)
+        assert results[0] == session
+        assert results[1] == "open"
+        # handle the payment
+        assert stripe_handler.handle_payment(session) == False 
+        # check the session again
+        results = stripe_handler.check_checkout_session(session.id)
+        assert results[0] == session
+        assert results[1] == "open"
+
+        with patch("src.stripe_handler.StripeHandler.handle_payment") as mock_handle_payment:
+            mock_handle_payment.return_value = True
+            assert stripe_handler.handle_payment(session) == True
+            mock_handle_payment.assert_called_once_with(session)
+        

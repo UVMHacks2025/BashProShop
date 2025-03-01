@@ -52,6 +52,31 @@ def listings():
     listings = Listing.get_next(10, [], [Listing.post_date])
     return render_template("listings.html", listings=listings)
 
+@app.route("/webhook", methods=["POST"])
+def stripe_webhook():
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get("Stripe-Signature")
+    event = None
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, os.getenv("STRIPE_WEBHOOK_SECRET"))
+    except ValueError as e:
+        # Invalid payload
+        return jsonify({"error": "Invalid payload" + str(e)}), 400
+    except StripeError as e:
+        # Invalid signature
+        return jsonify({"error": "Invalid signature" + str(e)}), 400
+    
+    # Handle the event
+    if event.type == "checkout.session.completed":
+        session = event["data"]["object"]
+        if session is not None and isinstance(session, dict):
+            # Fulfill the purchase
+            stripe_handler = StripeHandler()
+            stripe_handler.handle_payment(session)
+            print(f"Payment successful for session: {session["id"]}")
+    return jsonify({"status": "success"}), 200
+    
+
 
 @app.route("/create-listing")
 def createlisting():
