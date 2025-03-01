@@ -110,11 +110,12 @@ def insert_test_data(db):
     Insert predefined test data into the database.
     """
     users = [
-        User(email="drew@example.com", first_name="drew", last_name="Doe", school="MIT"),
-        User(email="jord@example.com", first_name="jord", last_name="Smith", school="Harvard"),
-        User(email="bob@example.com", first_name="Bob", last_name="Johnson", school="Stanford"),
-        User(email="alice@example.com", first_name="Alice", last_name="Brown", school=None),
-        User(email="charlie@example.com", first_name="Charlie", last_name="Wilson", school="Berkeley")
+        User(email="drew@example.com", first_name="drew", last_name="Jepsen", school="MIT"),
+        User(email="jordan@example.com", first_name="jordan", last_name="Bourdeau", school="Harvard"),
+        User(email="Levi@example.com", first_name="Levi", last_name="Pare", school="Stanford"),
+        User(email="caroline@example.com", first_name="Caroline", last_name="Palecek", school=None),
+        User(email="river@example.com", first_name="River", last_name="Bumpas", school="Berkeley"),
+        User(email="surya@example.com", first_name="Surya", last_name="Malik", school="University of Vermont")
     ]
     
     for user in users:
