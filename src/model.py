@@ -19,6 +19,10 @@ DB_PATH = "sqlite:///" + \
         os.path.realpath(__file__))), "database.db")
 
 
+def get_db() -> SQLAlchemy:
+    return db
+
+
 def init_db(app: Flask) -> SQLAlchemy:
     app.config["SQLALCHEMY_DATABASE_URI"] = DB_PATH
     db.init_app(app)
@@ -55,10 +59,13 @@ class User(db.Model):
 
     @staticmethod
     def get_by_id(id: int) -> 'User':
-        return User.query.filter(User.id == id).first()
+        return User.query.filter(User.id == id).first()  # type: ignore
 
     def get_listings(self) -> List['Listing']:
         return Listing.query.filter(Listing.seller_id == self.id).all()
+
+    def get_cart_items(self) -> List['CartItem']:
+        return CartItem.query.filter(CartItem.client_id == self.id).all()
 
     @property
     def is_active(self):
@@ -84,12 +91,26 @@ class Listing(db.Model):
     price: Mapped[float]
     post_date: Mapped[date]
     duration: Mapped[Optional[int]]
+    start_date: Mapped[Optional[date]]
+
+    seller = db.relationship('User', backref='listings')
+    images = db.relationship('Image', backref='listing')
 
     @staticmethod
     # Condition isn't actually a type, but is of the form
     # MyClass.field == "value"
-    def get_next(n: int, conditions: List['Condition'], orderings: List['Ordering']) -> List['Self']:
-        return Listing.query.filter(*conditions).order_by(*orderings).limit(n).all()
+    def get_next(
+        page: int = 0,
+        page_size: int = 20,
+        conditions: List['Condition'] = [],  # type: ignore
+        orderings: List['Ordering'] = []  # type: ignore
+    ) -> List['Self']:  # type: ignore
+        return Listing.query \
+            .filter(*conditions) \
+            .order_by(*orderings) \
+            .offset(page * page_size) \
+            .limit(page_size) \
+            .all()
 
 
 class Order(db.Model):
@@ -98,6 +119,12 @@ class Order(db.Model):
     buyer_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     seller_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     date: Mapped[date]
+
+
+class CartItem(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    client_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    listing_id: Mapped[int] = mapped_column(ForeignKey("listing.id"))
 
 
 class Interactions(db.Model):
@@ -119,24 +146,30 @@ class Image(db.Model):
     name: Mapped[str]
     encoded: Mapped[LargeBinary] = mapped_column(LargeBinary, nullable=False)
 
+    @staticmethod
+    def get_for(listing: Listing) -> List['Self']:
+        return Image.query \
+            .filter(Image.listing_id == listing.id) \
+            .all()
+
 
 def insert_test_data(db):
     """
     Insert predefined test data into the database.
     """
     users = [
-        User(email="drew@example.com", first_name="drew",
-             last_name="Jepsen", school="MIT"),
-        User(email="jordan@example.com", first_name="jordan",
-             last_name="Bourdeau", school="Harvard"),
-        User(email="Levi@example.com", first_name="Levi",
-             last_name="Pare", school="Stanford"),
-        User(email="caroline@example.com", first_name="Caroline",
-             last_name="Palecek", school=None),
-        User(email="river@example.com", first_name="River",
-             last_name="Bumpas", school="Berkeley"),
-        User(email="surya@example.com", first_name="Surya",
-             last_name="Malik", school="University of Vermont")
+        User(email="drew@example.com", first_name="drew",  # type: ignore
+             last_name="Jepsen", school="MIT"),  # type: ignore
+        User(email="jordan@example.com", first_name="jordan",  # type: ignore
+             last_name="Bourdeau", school="Harvard"),  # type: ignore
+        User(email="Levi@example.com", first_name="Levi",  # type: ignore
+             last_name="Pare", school="Stanford"),  # type: ignore
+        User(email="caroline@example.com", first_name="Caroline",  # type: ignore
+             last_name="Palecek", school=None),  # type: ignore
+        User(email="river@example.com", first_name="River",  # type: ignore
+             last_name="Bumpas", school="Berkeley"),  # type: ignore
+        User(email="surya@example.com", first_name="Surya",  # type: ignore
+             last_name="Malik", school="University of Vermont")  # type: ignore
     ]
 
     for user in users:
@@ -147,84 +180,84 @@ def insert_test_data(db):
 
     listings = [
         Listing(
-            seller_id=users[0].id,
-            name="MacBook Pro 2022",
-            description="Slightly used MacBook Pro, great condition",
-            price=899.99,
-            post_date=datetime.now().date(),
-            duration=30
+            seller_id=users[0].id,  # type: ignore
+            name="MacBook Pro 2022",  # type: ignore
+            description="Slightly used MacBook Pro, great condition",  # type: ignore
+            price=899.99,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=30  # type: ignore
         ),
         Listing(
-            seller_id=users[1].id,
-            name="Calculus Textbook",
-            description="Calculus: Early Transcendentals, 8th Edition",
-            price=45.00,
-            post_date=datetime.now().date(),
-            duration=14
+            seller_id=users[1].id,  # type: ignore
+            name="Calculus Textbook",  # type: ignore
+            description="Calculus: Early Transcendentals, 8th Edition",  # type: ignore
+            price=45.00,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=14  # type: ignore
         ),
         Listing(
-            seller_id=users[2].id,
-            name="Desk Chair",
-            description="Ergonomic office chair, black",
-            price=75.50,
-            post_date=datetime.now().date(),
-            duration=7
+            seller_id=users[2].id,  # type: ignore
+            name="Desk Chair",  # type: ignore
+            description="Ergonomic office chair, black",  # type: ignore
+            price=75.50,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=7  # type: ignore
         ),
         Listing(
-            seller_id=users[0].id,
-            name="iPhone 13",
-            description="Like new iPhone 13, 128GB",
-            price=550.00,
-            post_date=datetime.now().date(),
-            duration=14
+            seller_id=users[0].id,  # type: ignore
+            name="iPhone 13",  # type: ignore
+            description="Like new iPhone 13, 128GB",  # type: ignore
+            price=550.00,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=14  # type: ignore
         ),
         Listing(
-            seller_id=users[3].id,
-            name="Physics Notes",
-            description="Complete Physics 101 notes",
-            price=15.00,
-            post_date=datetime.now().date(),
-            duration=None
+            seller_id=users[3].id,  # type: ignore
+            name="Physics Notes",  # type: ignore
+            description="Complete Physics 101 notes",  # type: ignore
+            price=15.00,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=None  # type: ignore
         ),
         Listing(
-            seller_id=users[4].id,
-            name="Mini Fridge",
-            description="Perfect for dorm room",
-            price=80.00,
-            post_date=datetime.now().date(),
-            duration=30
+            seller_id=users[4].id,  # type: ignore
+            name="Mini Fridge",  # type: ignore
+            description="Perfect for dorm room",  # type: ignore
+            price=80.00,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=30  # type: ignore
         ),
         Listing(
-            seller_id=users[2].id,
-            name="Scientific Calculator",
-            description="TI-84 Plus, barely used",
-            price=50.00,
-            post_date=datetime.now().date(),
-            duration=None
+            seller_id=users[2].id,  # type: ignore
+            name="Scientific Calculator",  # type: ignore
+            description="TI-84 Plus, barely used",  # type: ignore
+            price=50.00,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=None  # type: ignore
         ),
         Listing(
-            seller_id=users[1].id,
-            name="Desk Lamp",
-            description="LED desk lamp with USB port",
-            price=25.99,
-            post_date=datetime.now().date(),
-            duration=14
+            seller_id=users[1].id,  # type: ignore
+            name="Desk Lamp",  # type: ignore
+            description="LED desk lamp with USB port",  # type: ignore
+            price=25.99,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=14  # type: ignore
         ),
         Listing(
-            seller_id=users[3].id,
-            name="Chemistry Lab Coat",
-            description="Size M, white lab coat",
-            price=20.00,
-            post_date=datetime.now().date(),
-            duration=7
+            seller_id=users[3].id,  # type: ignore
+            name="Chemistry Lab Coat",  # type: ignore
+            description="Size M, white lab coat",  # type: ignore
+            price=20.00,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=7  # type: ignore
         ),
         Listing(
-            seller_id=users[4].id,
-            name="Laptop Stand",
-            description="Adjustable aluminum laptop stand",
-            price=35.50,
-            post_date=datetime.now().date(),
-            duration=None
+            seller_id=users[4].id,  # type: ignore
+            name="Laptop Stand",  # type: ignore
+            description="Adjustable aluminum laptop stand",  # type: ignore
+            price=35.50,  # type: ignore
+            post_date=datetime.now().date(),  # type: ignore
+            duration=None  # type: ignore
         )
     ]
 
@@ -232,4 +265,3 @@ def insert_test_data(db):
         db.session.add(listing)
 
     db.session.commit()
-
