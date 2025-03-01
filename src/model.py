@@ -85,6 +85,9 @@ class Listing(db.Model):
     post_date: Mapped[date]
     duration: Mapped[Optional[int]]
 
+    seller = db.relationship('User', backref='listings')
+    images = db.relationship('Image', backref='listing')
+
     @staticmethod
     # Condition isn't actually a type, but is of the form
     # MyClass.field == "value"

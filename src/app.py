@@ -10,7 +10,7 @@ from sqlalchemy import Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
 
-from model import DB_PATH, Listing, User, init_db, insert_test_data
+from model import DB_PATH, Listing, User, init_db, insert_test_data, Image
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bashproshop'
@@ -149,6 +149,29 @@ def createlisting():
 
     if (request.method == 'GET'):
         return render_template("create_listing.html")
+
+
+@app.route("/listing-detail")
+def listing_detail():
+    listing_id=request.args.get('id')
+    listing = Listing.query.get_or_404(listing_id)
+
+    images = Image.query.filter_by(listing_id=listing_id).all()
+    return render_template("listing_detail.html", listing=listing, images=images)
+
+
+@app.route('/checkout')
+@login_required
+def checkout():
+    listing_id=request.args.get('id')
+    listing = Listing.query.get_or_404(listing_id)
+ 
+    if listing.seller_id == current_user.id:
+        return render_template('listing_detail.html', 
+                             listing=listing,
+                             message='You cannot purchase your own listing')
+    
+    return render_template('checkout.html', listing=listing)
 
 
 if __name__ == "__main__":
