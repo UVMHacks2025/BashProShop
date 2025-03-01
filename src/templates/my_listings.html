@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<main class="row flex-nowrap">
+  <div class="container flex-shrink-1 p-0">
+    <section class="d-flex flex-wrap justify-content-start p-3 gap-3">
+      {% for listing in listings %}
+      {% include 'listing_component.html' %}
+      {% endfor %}
+    </section>
+  </div>
+</main>
+
+{% endblock %}

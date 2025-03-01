@@ -67,6 +67,21 @@ class User(db.Model):
     def get_cart_items(self) -> List['CartItem']:
         return CartItem.query.filter(CartItem.client_id == self.id).all()
 
+    @property
+    def is_active(self):
+        return True  # All users are active by default
+
+    @property
+    def is_authenticated(self):
+        return True  # All users are authenticated when they exist
+
+    @property
+    def is_anonymous(self):
+        return False  # Real users are not anonymous
+
+    def get_id(self):
+        return str(self.id)  # Convert to string as Flask-Login expects
+
 
 class Listing(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -76,6 +91,10 @@ class Listing(db.Model):
     price: Mapped[float]
     post_date: Mapped[date]
     duration: Mapped[Optional[int]]
+    start_date: Mapped[Optional[date]]
+
+    seller = db.relationship('User', backref='listings')
+    images = db.relationship('Image', backref='listing')
 
     @staticmethod
     # Condition isn't actually a type, but is of the form

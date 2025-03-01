@@ -1,4 +1,3 @@
 __pycache__/
 # Ignore database file
-*.db
 .env
