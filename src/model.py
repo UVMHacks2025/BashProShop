@@ -42,6 +42,7 @@ class Listing(db.Model):
     description: Mapped[str]
     price: Mapped[float]
     post_date: Mapped[date]
+    duration: Mapped[Optional[int]]
 
 
 class Order(db.Model):
