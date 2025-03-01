@@ -1,1 +1,1 @@
-ptw . --clear
+ptw ../ . --clear
