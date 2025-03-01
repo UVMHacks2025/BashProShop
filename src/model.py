@@ -6,6 +6,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey, Integer, LargeBinary, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class Base(DeclarativeBase):
@@ -33,6 +34,24 @@ class User(db.Model):
     first_name: Mapped[str]
     last_name: Mapped[str]
     hashed_password: Mapped[str]
+
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+
+    @password.setter
+    def password(self, password):
+        self.hashed_password = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.hashed_password, password)
+
+    @classmethod
+    def authenticate(cls, email, password):
+        user = cls.query.filter_by(email=email).first()
+        if user and user.verify_password(password):
+            return user
+        return None
 
 
 class Listing(db.Model):
