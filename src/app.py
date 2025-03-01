@@ -27,17 +27,20 @@ def load_user(user_id):
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    if (request.method == 'POST'):
-        data = request.get_json()
-        user = User.authenticate(data.get('email'), data.get('password'))
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        remember = request.form.get('remember') == 'on'  # Convert checkbox value to boolean
+        
+        user = User.authenticate(email, password)
         if user:
-            # Get remember preference from request
-            remember = data.get('remember', False)
             login_user(user, remember=remember)
-            return jsonify({'message': 'Logged in successfully'})
-        return jsonify({'message': 'Invalid email or password'}), 401
-    if (request.method == 'GET'):
-        return render_template('login.html')
+            return render_template('listings.html', 
+                                listings=Listing.get_next(10, [], [Listing.post_date]),
+                                message='Logged in successfully')
+        return render_template('login.html', message='Invalid email or password')
+    
+    return render_template('login.html')
 
 
 @app.route('/logout')
