@@ -1,24 +1,18 @@
-import os
-from datetime import timedelta
-
-import stripe
-import sqlalchemy as sq
 import base64
-from flask import Flask, jsonify, render_template, request, session, redirect
-from flask_login import (
-    LoginManager,
-    current_user,
-    login_required,
-    login_user,
-    logout_user,
-)
+import os
+from datetime import date, datetime, timedelta
+
+import sqlalchemy as sq
+import stripe
+from flask import Flask, jsonify, redirect, render_template, request, session
+from flask_login import (LoginManager, current_user, login_required,
+                         login_user, logout_user)
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from datetime import datetime, date
-import stripe
 
-from model import DB_PATH, Listing, User, init_db, insert_test_data, Image
+from model import DB_PATH, Image, Listing, User, init_db, insert_test_data
+from stripe_handler import StripeHandler
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "bashproshop"
@@ -101,7 +95,8 @@ def my_listings():
     for listing in listings:
         images = Image.get_for(listing)
         if images:
-            listing.imgsrc = f"data:image/;base64,{images[0].encoded.decode('utf-8')}" 
+            listing.imgsrc = f"data:image/;base64,{
+                images[0].encoded.decode('utf-8')}"
     return render_template("my_listings.html", listings=current_user.get_listings())
 
 
@@ -130,22 +125,27 @@ def listings():
         filters.append(Listing.name.contains(search))
 
     listings = Listing.get_next(0,
-        100,
-        filters,
-        [Listing.post_date],
-    )
+                                100,
+                                filters,
+                                [Listing.post_date],
+                                )
 
     for listing in listings:
         images = Image.get_for(listing)
         if images:
-            listing.imgsrc = f"data:image/;base64,{images[0].encoded.decode('utf-8')}" 
-    
+            listing.imgsrc = f"data:image/;base64,{
+                images[0].encoded.decode('utf-8')}"
 
     return render_template("listings.html", listings=listings)
 
 
+@app.route("/create_checkout_session", methods=["POST"])
+def checkout_session():
+    handler = StripeHandler()
+    return handler.create_checkout_session()
 
-@app.route("/create-listing", methods = ['GET', 'POST'])
+
+@app.route("/create-listing", methods=['GET', 'POST'])
 @login_required
 def createlisting():
     if request.method == "POST":
@@ -153,11 +153,14 @@ def createlisting():
         name = request.form.get("name")
         description = request.form.get("description")
         price = request.form.get("price")
-        listing_type = request.form.get("listingType")  # "selling" or "renting"
+        listing_type = request.form.get(
+            "listingType")  # "selling" or "renting"
         start_date = (
-            request.form.get("startDate") if listing_type == "renting" else None
+            request.form.get(
+                "startDate") if listing_type == "renting" else None
         )
-        duration = request.form.get("duration") if listing_type == "renting" else None
+        duration = request.form.get(
+            "duration") if listing_type == "renting" else None
         images = request.files.getlist("images")
 
         # make sure user entered all fields
@@ -185,23 +188,25 @@ def createlisting():
                 duration = int(duration)
                 if duration <= 0:
                     return (
-                        jsonify({"message": "Duration must be a positive integer"}),
+                        jsonify(
+                            {"message": "Duration must be a positive integer"}),
                         400,
                     )
             except ValueError:
                 return jsonify({'message': 'Invalid duration'}), 400
-            
+
         with app.app_context():
             new_listing = Listing(
-                seller_id = current_user.id,
-                name = name,
-                description = description,
-                price = price,
-                post_date = date.today(),
-                duration = duration if duration else None,
-                start_date = datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
+                seller_id=current_user.id,
+                name=name,
+                description=description,
+                price=price,
+                post_date=date.today(),
+                duration=duration if duration else None,
+                start_date=datetime.strptime(
+                    start_date, '%Y-%m-%d') if start_date else None
             )
-    
+
             db.session.add(new_listing)
             db.session.commit()
 
@@ -210,9 +215,9 @@ def createlisting():
                 if image:
                     image_string = base64.b64encode(image.read())
                     new_image = Image(
-                        listing_id = listing_id,
-                        name = image.filename,
-                        encoded = image_string
+                        listing_id=listing_id,
+                        name=image.filename,
+                        encoded=image_string
                     )
                     db.session.add(new_image)
             db.session.commit()
@@ -222,10 +227,9 @@ def createlisting():
         return render_template("create_listing.html")
 
 
-
 @app.route("/listing-detail")
 def listing_detail():
-    listing_id=request.args.get('id')
+    listing_id = request.args.get('id')
     listing = Listing.query.get_or_404(listing_id)
 
     images = Image.query.filter_by(listing_id=listing_id).all()
@@ -235,14 +239,14 @@ def listing_detail():
 @app.route('/checkout')
 @login_required
 def checkout():
-    listing_id=request.args.get('id')
+    listing_id = request.args.get('id')
     listing = Listing.query.get_or_404(listing_id)
- 
+
     if listing.seller_id == current_user.id:
-        return render_template('listing_detail.html', 
-                             listing=listing,
-                             message='You cannot purchase your own listing')
-    
+        return render_template('listing_detail.html',
+                               listing=listing,
+                               message='You cannot purchase your own listing')
+
     return render_template('checkout.html', listing=listing)
 
 
@@ -251,7 +255,7 @@ if __name__ == "__main__":
     with app.app_context():
         db = init_db(app)
         # Comment out after first run
-        #insert_test_data(db=db)
+        # insert_test_data(db=db)
         user = User.get_by_id(1)
         print(user)
         print(user.get_listings())

@@ -1,11 +1,12 @@
-import stripe
-from stripe import ErrorObject, StripeError
 import os
-from flask import current_app, url_for, redirect
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+import stripe
 from dotenv import load_dotenv
+from flask import current_app, redirect, url_for
+from stripe import ErrorObject, StripeError
 
 load_dotenv()
 
@@ -23,7 +24,7 @@ class StripeHandler:
 
         if not self.api_key:
             raise ValueError("STRIPE_SECRET_KEY is not set")
-        
+
         stripe.api_key = self.api_key
 
     def create_customer_params(self, user):
@@ -51,7 +52,7 @@ class StripeHandler:
         except StripeError as e:
             current_app.logger.error(f"Stripe error: {e}")
             return None
-    
+
     def get_all_customers(self):
         try:
             customers = stripe.Customer.list()
@@ -59,7 +60,7 @@ class StripeHandler:
         except StripeError as e:
             current_app.logger.error(f"Stripe error: {e}")
             return None
-    
+
     def update_customer(self, customer_id, params):
         try:
             customer = stripe.Customer.modify(customer_id, **params)
@@ -67,7 +68,7 @@ class StripeHandler:
         except StripeError as e:
             current_app.logger.error(f"Stripe error: {e}")
             return None
-    
+
     def delete_customer(self, customer_id):
         try:
             response = stripe.Customer.delete(customer_id)
@@ -75,7 +76,7 @@ class StripeHandler:
         except StripeError as e:
             current_app.logger.error(f"Stripe error: {e}")
             return None
-    
+
     def customers_query(self, query: str):
         try:
             customers = stripe.Customer.search(query=query)
@@ -83,9 +84,9 @@ class StripeHandler:
         except StripeError as e:
             current_app.logger.error(f"Stripe error: {e}")
             return None
-    
+
     def create_customer_session(self, customer_id):
-        try: 
+        try:
             session = stripe.CustomerSession.create(
                 customer=customer_id,
                 components={
@@ -102,13 +103,14 @@ class StripeHandler:
             )
             return session
         except StripeError as e:
-            current_app.logger.error(f"Stripe Error (create_customer_session): {e}")
+            current_app.logger.error(
+                f"Stripe Error (create_customer_session): {e}")
             return None
-    
-    def create_checkout_session(self, customer_id, success_url, cancel_url):
+
+    def create_checkout_session(self):
+        DOMAIN = "https://localhost:5000"
         try:
             session = stripe.checkout.Session.create(
-                customer=customer_id,
                 payment_method_types=['card'],
                 mode="payment",
                 line_items=[{
@@ -119,27 +121,31 @@ class StripeHandler:
                     },
                     "quantity": 1,
                 }],
-                success_url = url_for('payment.success', _external=True),
-                cancel_url = url_for('payment.cancel', _external=True),
+                success_url=DOMAIN + '/payment_success.html',
+                cancel_url=DOMAIN + '/payment_cancel.html',
             )
-            
+
         except StripeError as e:
-            current_app.logger.error(f"Stripe Error (create_checkout_session): {e}")
+            current_app.logger.error(
+                f"Stripe Error (create_checkout_session): {e}")
             return None
-        return redirect(session.url,code=303)
-        
+        return redirect(session.url, code=303)
+
     def check_checkout_session(self, session_id):
         try:
             session = stripe.checkout.Session.retrieve(session_id)
-            return (session, session.status)  # Returns the whole session and the status 'open', 'complete', or 'expired'
+            # Returns the whole session and the status 'open', 'complete', or 'expired'
+            return (session, session.status)
         except StripeError as e:
-            current_app.logger.error(f"Stripe Error (check_checkout_session): {e}")
+            current_app.logger.error(
+                f"Stripe Error (check_checkout_session): {e}")
             return None
-        
+
     def handle_payment(self, session):
         # if the payment is successful, send the user a confirmation email, do not handle unsuccessful payments
         if not EMAIL_USER or not EMAIL_PASS or not SMTP_SERVER or not SMTP_PORT:
-            current_app.logger.error("EMAIL_USER or EMAIL_PASS or SMTP_SERVER or SMTP_PORT is not set")
+            current_app.logger.error(
+                "EMAIL_USER or EMAIL_PASS or SMTP_SERVER or SMTP_PORT is not set")
             return None
         customer_email = session["customer_email"]
         product_price = session["amount_total"]
@@ -147,7 +153,7 @@ class StripeHandler:
         message["From"] = EMAIL_USER
         message["To"] = customer_email
         message["Subject"] = f"Payment Successful {"item"}"
-        message.attach  (MIMEText(f"""
+        message.attach(MIMEText(f"""
             <h1>Payment Successful for {"item"}</h1>
             <p>Dear {customer_email},</p>
             <p>Thank you for your purchase <b>{"item"}</b>.
@@ -164,7 +170,8 @@ class StripeHandler:
                 with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
                     server.starttls()
                     server.login(EMAIL_USER, EMAIL_PASS)
-                    server.sendmail(message["From"], message["To"], message.as_string())
+                    server.sendmail(message["From"],
+                                    message["To"], message.as_string())
                     current_app.logger.info(f"Email sent to {customer_email}")
                 return True
             except Exception as e:
