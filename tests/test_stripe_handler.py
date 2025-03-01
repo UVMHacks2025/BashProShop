@@ -162,7 +162,7 @@ def test_check_checkout_session(setUp):
         assert results[0] == session
         assert results[1] == "open"
 
-def test_handle_unsuccessful_payment(setUp):
+def test_handle_payment(setUp):
     with app.app_context():
         stripe_handler = setUp
         customer_instance = stripe_handler.create_customer({
