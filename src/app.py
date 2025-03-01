@@ -58,11 +58,11 @@ def signup():
         confirm_password = request.form.get('confirmPassword')
 
         if password != confirm_password:
-            return jsonify({'message': 'Passwords do not match'}), 400
+            return render_template('signup.html', message='Passwords do not match')
 
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-            return jsonify({'message': 'Email already registered'}), 400
+            return render_template('signup.html', message='Email already registered')
 
         user = User(
             email=email,
@@ -76,7 +76,7 @@ def signup():
         db.session.commit()
 
         login_user(user)
-        return jsonify({'message': 'Signup successful'})
+        return render_template('listings.html', listings=Listing.get_next(10, [], [Listing.post_date]),message='Signup successful')
 
     if request.method == 'GET':
         return render_template("signup.html")
