@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 import sqlalchemy as sq
@@ -8,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from model import User, init_db
+from model import DB_PATH, Listing, User, init_db, insert_test_data
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bashproshop'
@@ -57,4 +58,13 @@ def createlisting():
 
 if __name__ == "__main__":
     db = init_db(app)
+    # Comment out after first run
+    # insert_test_data()
+
+    with app.app_context():
+        user = User.get_by_id(1)
+        print(user)
+        print(user.get_listings())
+        print(Listing.get_next(10, [], [Listing.post_date]))
+
     app.run(debug=True)
