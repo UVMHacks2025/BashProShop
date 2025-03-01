@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 
 import sqlalchemy as sq
-from flask import Flask, jsonify, request, session, render_template
+from flask import Flask, jsonify, render_template, request, session
 from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
 from flask_sqlalchemy import SQLAlchemy
@@ -38,13 +38,14 @@ def login():
         return jsonify({'message': 'Invalid email or password'}), 401
     if (request.method == 'GET'):
         return render_template('login.html')
-   
+
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return jsonify({'message': 'Logged out successfully'})
+
 
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
@@ -54,13 +55,14 @@ def signup():
     if (request.method == 'GET'):
         return render_template("signup.html")
 
+
 @app.route("/")
 def listings():
-    listings = Listing.get_next(10, [], [Listing.post_date])
+    listings = Listing.get_next(0, 10, [], [Listing.post_date])
     return render_template("listings.html", listings=listings)
 
 
-@app.route("/create-listing", methods = ['GET', 'POST'])
+@app.route("/create-listing", methods=['GET', 'POST'])
 def createlisting():
     if (request.method == 'POST'):
         # retrieve data
@@ -69,9 +71,9 @@ def createlisting():
         price = request.form.get('price')
         images = request.files.getlist('images')
 
-        
     if (request.method == 'GET'):
         return render_template("create_listing.html")
+
 
 if __name__ == "__main__":
 
