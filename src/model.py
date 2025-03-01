@@ -64,6 +64,9 @@ class User(db.Model):
     def get_listings(self) -> List['Listing']:
         return Listing.query.filter(Listing.seller_id == self.id).all()
 
+    def get_cart_items(self) -> List['CartItem']:
+        return CartItem.query.filter(CartItem.client_id == self.id).all()
+
 
 class Listing(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
