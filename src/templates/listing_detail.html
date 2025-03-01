@@ -8,26 +8,46 @@
             <div id="listingCarousel" class="carousel slide" data-bs-ride="carousel">
                 <!-- Carousel indicators -->
                 <div class="carousel-indicators">
-                    {% for image in listing.images %}
-                    <button type="button" 
+                    {% if listing.images|length > 0 %}
+                        {% for image in listing.images %}
+                        <button type="button" 
+                                data-bs-target="#listingCarousel" 
+                                data-bs-slide-to="{{ loop.index0 }}" 
+                                {% if loop.first %}class="active"{% endif %}
+                                aria-current="true" 
+                                aria-label="Slide {{ loop.index }}">
+                        </button>
+                        {% endfor %}
+                    {% else %}
+                        <button type="button" 
                             data-bs-target="#listingCarousel" 
-                            data-bs-slide-to="{{ loop.index0 }}" 
-                            {% if loop.first %}class="active"{% endif %}
-                            aria-current="true" 
-                            aria-label="Slide {{ loop.index }}">
-                    </button>
-                    {% endfor %}
+                            data-bs-slide-to="0" 
+                            class="active"
+                            aria-current="true"
+                            aria-label="Slide 1">
+                        </button>
+                    {% endif %}
                 </div>
+        
 
                 <div class="carousel-inner">
-                    {% for image in listing.images %}
-                    <div class="carousel-item {% if loop.first %}active{% endif %}">
-                        <img src="data:image/jpeg;base64,{{ image.encoded }}" 
-                             class="d-block w-100" 
-                             alt="{{ image.name }}"
-                             style="object-fit: cover; height: 500px;">
-                    </div>
-                    {% endfor %}
+                    {% if listing.images|length > 0 %}
+                        {% for image in listing.images %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                            <img src="data:image/jpeg;base64,{{ image.encoded.decode('utf-8') }}" 
+                                class="d-block w-100" 
+                                alt="{{ image.name }}"
+                                style="object-fit: cover; height: 500px;">
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                            <div class="carousel-item active">
+                                <img src="/static/default.jpg" 
+                                    class="d-block w-100" 
+                                    alt="Default Listing Image"
+                                    style="object-fit: cover; height: 500px;">
+                            </div>
+                        {% endif %}
                 </div>
 
                 <!-- Carousel controls -->

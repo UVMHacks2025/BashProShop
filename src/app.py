@@ -16,6 +16,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime, date
+import stripe
 
 from model import DB_PATH, Listing, User, init_db, insert_test_data, Image
 
@@ -95,6 +96,7 @@ def signup():
 @app.route("/my-listings", methods=["GET"])
 @login_required
 def my_listings():
+    listings = Listing.get_next(0, 100, [], [Listing.post_date])
     listings = Listing.get_next(0, 100, [], [Listing.post_date])
     for listing in listings:
         images = Image.get_for(listing)
