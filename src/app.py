@@ -51,13 +51,13 @@ def index():
 
 if __name__ == "__main__":
     db = init_db(app)
-    # Comment out after first run
-    # insert_test_data()
-
     with app.app_context():
+        # Comment out after first run
+        # insert_test_data()
         user = User.get_by_id(1)
         print(user)
         print(user.get_listings())
-        print(Listing.get_next(10, [], [Listing.post_date]))
+        print(Listing.get_next(0, 5, [], [Listing.post_date]))
+        print(Listing.get_next(1, 5, [], [Listing.post_date]))
 
     app.run(debug=True)
