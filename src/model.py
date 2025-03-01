@@ -1,12 +1,12 @@
 import os
 from datetime import date
-from typing import Optional
+from typing import List, Optional
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey, Integer, LargeBinary, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 class Base(DeclarativeBase):
@@ -53,6 +53,13 @@ class User(db.Model):
             return user
         return None
 
+    @staticmethod
+    def get_by_id(id: int) -> 'User':
+        return User.query.filter(User.id == id).first()
+
+    def get_postings(self) -> List['Listing']:
+        return Listing.query.filter(Listing.seller_id == self.id).all()
+
 
 class Listing(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -62,6 +69,12 @@ class Listing(db.Model):
     price: Mapped[float]
     post_date: Mapped[date]
     duration: Mapped[Optional[int]]
+
+    @staticmethod
+    # Condition isn't actually a type, but is of the form
+    # MyClass.field == "value"
+    def get_next(n: int, conditions: List['Condition']) -> List['Self']:
+        return Listing.query.filter(*conditions).count(n)
 
 
 class Order(db.Model):
