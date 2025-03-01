@@ -18,11 +18,38 @@
                     <input type="number" step="0.01" name="price" id="price" class="form-control" required>
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Is this item for sale or rent?</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="listingType" id="selling" value="selling" checked onclick="toggleRentalFields()">
+                        <label class="form-check-label" for="selling">Selling</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="listingType" id="renting" value="renting" onclick="toggleRentalFields()">
+                        <label class="form-check-label" for="renting">Renting</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="startDate" class="form-label">Start Date (If renting)</label>
+                    <input type="date" name="startDate" id="startDate" class="form-control" disabled>
+                </div>
+                <div class="mb-3">
+                    <label for="duration" class="form-label">Duration in Days (If renting)</label>
+                    <input type="number" name="duration" id="duration" class="form-control" disabled>
+                </div>
+                <div class="mb-3">
                     <label for="images" class="form-label">Upload Images</label>
                     <input type="file" name="images" id="images" class="form-control" accept="image/*" multiple required onchange="previewImages(event)">
                 </div>
+    
                 <div id="imagePreviewContainer" class="mt-2 d-flex flex-wrap gap-2"></div>
+    
                 <script>
+                    // Function for toggling the renting fields
+                    function toggleRentalFields() {
+                        let renting = document.getElementById("renting").checked; // if checked
+                        document.getElementById("startDate").disabled = !renting; // show
+                        document.getElementById("duration").disabled = !renting; // show
+                    }
                     // Function to preview the images the user uploaded
                     function previewImages() {
                         let container = document.getElementById('imagePreviewContainer'); 
