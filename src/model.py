@@ -1,5 +1,6 @@
 import os
 from datetime import date
+from typing import Optional
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -28,6 +29,7 @@ def init_db(app: Flask) -> SQLAlchemy:
 class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(unique=True)
+    school: Mapped[Optional[str]]
     first_name: Mapped[str]
     last_name: Mapped[str]
     hashed_password: Mapped[str]
