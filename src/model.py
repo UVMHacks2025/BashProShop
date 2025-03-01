@@ -60,6 +60,21 @@ class User(db.Model):
     def get_listings(self) -> List['Listing']:
         return Listing.query.filter(Listing.seller_id == self.id).all()
 
+    @property
+    def is_active(self):
+        return True  # All users are active by default
+
+    @property
+    def is_authenticated(self):
+        return True  # All users are authenticated when they exist
+
+    @property
+    def is_anonymous(self):
+        return False  # Real users are not anonymous
+
+    def get_id(self):
+        return str(self.id)  # Convert to string as Flask-Login expects
+
 
 class Listing(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
