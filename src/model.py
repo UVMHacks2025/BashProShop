@@ -103,3 +103,111 @@ class Image(db.Model):
     listing_id: Mapped[int] = mapped_column(ForeignKey("listing.id"))
     name: Mapped[str]
     encoded: Mapped[LargeBinary] = mapped_column(LargeBinary, nullable=False)
+
+
+def insert_test_data(db):
+    """
+    Insert predefined test data into the database.
+    """
+    users = [
+        User(email="drew@example.com", first_name="drew", last_name="Doe", school="MIT"),
+        User(email="jord@example.com", first_name="jord", last_name="Smith", school="Harvard"),
+        User(email="bob@example.com", first_name="Bob", last_name="Johnson", school="Stanford"),
+        User(email="alice@example.com", first_name="Alice", last_name="Brown", school=None),
+        User(email="charlie@example.com", first_name="Charlie", last_name="Wilson", school="Berkeley")
+    ]
+    
+    for user in users:
+        user.password = "password123"
+        db.session.add(user)
+    
+    db.session.commit()
+    
+    listings = [
+        Listing(
+            seller_id=users[0].id,
+            name="MacBook Pro 2022",
+            description="Slightly used MacBook Pro, great condition",
+            price=899.99,
+            post_date=datetime.now().date(),
+            duration=30
+        ),
+        Listing(
+            seller_id=users[1].id,
+            name="Calculus Textbook",
+            description="Calculus: Early Transcendentals, 8th Edition",
+            price=45.00,
+            post_date=datetime.now().date(),
+            duration=14
+        ),
+        Listing(
+            seller_id=users[2].id,
+            name="Desk Chair",
+            description="Ergonomic office chair, black",
+            price=75.50,
+            post_date=datetime.now().date(),
+            duration=7
+        ),
+        Listing(
+            seller_id=users[0].id,
+            name="iPhone 13",
+            description="Like new iPhone 13, 128GB",
+            price=550.00,
+            post_date=datetime.now().date(),
+            duration=14
+        ),
+        Listing(
+            seller_id=users[3].id,
+            name="Physics Notes",
+            description="Complete Physics 101 notes",
+            price=15.00,
+            post_date=datetime.now().date(),
+            duration=None
+        ),
+        Listing(
+            seller_id=users[4].id,
+            name="Mini Fridge",
+            description="Perfect for dorm room",
+            price=80.00,
+            post_date=datetime.now().date(),
+            duration=30
+        ),
+        Listing(
+            seller_id=users[2].id,
+            name="Scientific Calculator",
+            description="TI-84 Plus, barely used",
+            price=50.00,
+            post_date=datetime.now().date(),
+            duration=None
+        ),
+        Listing(
+            seller_id=users[1].id,
+            name="Desk Lamp",
+            description="LED desk lamp with USB port",
+            price=25.99,
+            post_date=datetime.now().date(),
+            duration=14
+        ),
+        Listing(
+            seller_id=users[3].id,
+            name="Chemistry Lab Coat",
+            description="Size M, white lab coat",
+            price=20.00,
+            post_date=datetime.now().date(),
+            duration=7
+        ),
+        Listing(
+            seller_id=users[4].id,
+            name="Laptop Stand",
+            description="Adjustable aluminum laptop stand",
+            price=35.50,
+            post_date=datetime.now().date(),
+            duration=None
+        )
+    ]
+    
+    for listing in listings:
+        db.session.add(listing)
+    
+    db.session.commit()
+    
