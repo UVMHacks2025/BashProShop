@@ -1,0 +1,41 @@
+<aside class="col-auto w-10 min-vh-100 bg-dark text-white p-3" style="max-width: 300px;">
+  <form>
+    <h5 class="text-light">Find Listings</h5>
+    <div class="d-flex justify-content-between gap-2 mb-3">
+      <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+
+    <h5 class="text-light">Filters</h5>
+
+    <div class="mb-3">
+      <label class="form-label text-light">Price</label>
+      <div class="d-flex gap-2">
+        <input type="number" class="form-control" placeholder="Min" min="0">
+        <input type="number" class="form-control" placeholder="Max" min="0">
+      </div>
+      <div class="mt-2">
+        <input class="form-check-input" type="checkbox" value="news" id="free-listings">
+        <label class="form-check-label" for="free-listings">Show Free Listings</label>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label text-light">Category</label>
+      <select class="form-select">
+        <option selected>All</option>
+        <option value="1">Furniture</option>
+        <option value="2">Technology</option>
+        <option value="3">Clothing</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label text-light">Date Range</label>
+      <input type="date" class="form-control">
+    </div>
+
+
+    <button class="btn btn-secondary w-100">Apply Filters</button>
+  </form>
+</aside>

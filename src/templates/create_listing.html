@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow-lg" style="width: 350px;">
+        <h2 class="text-center mb-3">Create a Listing</h2>
+            <form method="post">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Item Name</label>
+                    <input type="text" name="name" id="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="price" class="form-label">Price ($)</label>
+                    <input type="number" step="0.01" name="price" id="price" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="images" class="form-label">Upload Images</label>
+                    <input type="file" name="images" id="images" class="form-control" accept="image/*" multiple required onchange="previewImages(event)">
+                </div>
+                <div id="imagePreviewContainer" class="mt-2 d-flex flex-wrap gap-2"></div>
+                <script>
+                    // Function to preview the images the user uploaded
+                    function previewImages() {
+                        let container = document.getElementById('imagePreviewContainer'); 
+                        container.innerHTML = "";  // updating the div for imagePreviewContainer
+
+                        for (let file of images.files) {
+                            let reader = new FileReader(); // converts image file to a url
+                            reader.onload = e => { // when the files load
+                                let img = document.createElement("img"); 
+                                img.src = e.target.result; // update the src of the img to the url of the image
+                                img.classList.add("img-thumbnail"); // bootstrap img-thumbnail framework
+                                img.style.maxWidth = "100px"; 
+                                container.appendChild(img);
+                            };
+                            reader.readAsDataURL(file); // reads image as base64
+                        }
+                    }
+                </script>
+                <button type="submit" class="btn btn-primary w-100">Create Listing</button>
+            </form>
+    </div>
+</main>
+{% endblock %}
