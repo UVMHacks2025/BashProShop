@@ -175,6 +175,29 @@ def createlisting():
         return render_template("create_listing.html")
 
 
+@app.route("/listing-detail")
+def listing_detail():
+    listing_id=request.args.get('id')
+    listing = Listing.query.get_or_404(listing_id)
+
+    images = Image.query.filter_by(listing_id=listing_id).all()
+    return render_template("listing_detail.html", listing=listing, images=images)
+
+
+@app.route('/checkout')
+@login_required
+def checkout():
+    listing_id=request.args.get('id')
+    listing = Listing.query.get_or_404(listing_id)
+ 
+    if listing.seller_id == current_user.id:
+        return render_template('listing_detail.html', 
+                             listing=listing,
+                             message='You cannot purchase your own listing')
+    
+    return render_template('checkout.html', listing=listing)
+
+
 if __name__ == "__main__":
 
     with app.app_context():
