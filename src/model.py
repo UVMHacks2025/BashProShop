@@ -73,8 +73,18 @@ class Listing(db.Model):
     @staticmethod
     # Condition isn't actually a type, but is of the form
     # MyClass.field == "value"
-    def get_next(n: int, conditions: List['Condition'], orderings: List['Ordering']) -> List['Self']:
-        return Listing.query.filter(*conditions).order_by(*orderings).limit(n).all()
+    def get_next(
+        page: int = 0,
+        page_size: int = 20,
+        conditions: List['Condition'] = [],
+        orderings: List['Ordering'] = []
+    ) -> List['Self']:
+        return Listing.query \
+            .filter(*conditions) \
+            .order_by(*orderings) \
+            .offset(page * page_size) \
+            .limit(page_size) \
+            .all()
 
 
 class Order(db.Model):
@@ -217,4 +227,3 @@ def insert_test_data(db):
         db.session.add(listing)
 
     db.session.commit()
-
