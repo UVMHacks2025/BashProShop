@@ -24,17 +24,20 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST', 'GET'])
 def login():
-    data = request.get_json()
-    user = User.authenticate(data.get('email'), data.get('password'))
-    if user:
-        # Get remember preference from request
-        remember = data.get('remember', False)
-        login_user(user, remember=remember)
-        return jsonify({'message': 'Logged in successfully'})
-    return jsonify({'message': 'Invalid email or password'}), 401
-
+    if (request.method == 'POST'):
+        data = request.get_json()
+        user = User.authenticate(data.get('email'), data.get('password'))
+        if user:
+            # Get remember preference from request
+            remember = data.get('remember', False)
+            login_user(user, remember=remember)
+            return jsonify({'message': 'Logged in successfully'})
+        return jsonify({'message': 'Invalid email or password'}), 401
+    if (request.method == 'GET'):
+        return render_template('login.html')
+   
 
 @app.route('/logout')
 @login_required
@@ -42,9 +45,13 @@ def logout():
     logout_user()
     return jsonify({'message': 'Logged out successfully'})
 
-@app.route("/signup")
+@app.route("/signup", methods=['GET', 'POST'])
 def signup():
-    return render_template("signup.html")
+    if (request.method == 'POST'):
+        data = request.get_json()
+        print(data)
+    if (request.method == 'GET'):
+        return render_template("signup.html")
 
 @app.route("/")
 def listings():
