@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 
 from flask import Flask
@@ -14,13 +14,13 @@ class Base(DeclarativeBase):
 
 
 db = SQLAlchemy(model_class=Base)
+DB_PATH = "sqlite:///" + \
+    os.path.join(os.path.dirname(os.path.dirname(
+        os.path.realpath(__file__))), "database.db")
 
 
 def init_db(app: Flask) -> SQLAlchemy:
-    db_path = "sqlite:///" + \
-        os.path.join(os.path.dirname(os.path.dirname(
-            os.path.realpath(__file__))), "database.db")
-    app.config["SQLALCHEMY_DATABASE_URI"] = db_path
+    app.config["SQLALCHEMY_DATABASE_URI"] = DB_PATH
     db.init_app(app)
     with app.app_context():
         db.create_all()
@@ -57,7 +57,7 @@ class User(db.Model):
     def get_by_id(id: int) -> 'User':
         return User.query.filter(User.id == id).first()
 
-    def get_postings(self) -> List['Listing']:
+    def get_listings(self) -> List['Listing']:
         return Listing.query.filter(Listing.seller_id == self.id).all()
 
 
@@ -73,8 +73,8 @@ class Listing(db.Model):
     @staticmethod
     # Condition isn't actually a type, but is of the form
     # MyClass.field == "value"
-    def get_next(n: int, conditions: List['Condition']) -> List['Self']:
-        return Listing.query.filter(*conditions).count(n)
+    def get_next(n: int, conditions: List['Condition'], orderings: List['Ordering']) -> List['Self']:
+        return Listing.query.filter(*conditions).order_by(*orderings).limit(n).all()
 
 
 class Order(db.Model):
@@ -110,20 +110,26 @@ def insert_test_data(db):
     Insert predefined test data into the database.
     """
     users = [
-        User(email="drew@example.com", first_name="drew", last_name="Jepsen", school="MIT"),
-        User(email="jordan@example.com", first_name="jordan", last_name="Bourdeau", school="Harvard"),
-        User(email="Levi@example.com", first_name="Levi", last_name="Pare", school="Stanford"),
-        User(email="caroline@example.com", first_name="Caroline", last_name="Palecek", school=None),
-        User(email="river@example.com", first_name="River", last_name="Bumpas", school="Berkeley"),
-        User(email="surya@example.com", first_name="Surya", last_name="Malik", school="University of Vermont")
+        User(email="drew@example.com", first_name="drew",
+             last_name="Jepsen", school="MIT"),
+        User(email="jordan@example.com", first_name="jordan",
+             last_name="Bourdeau", school="Harvard"),
+        User(email="Levi@example.com", first_name="Levi",
+             last_name="Pare", school="Stanford"),
+        User(email="caroline@example.com", first_name="Caroline",
+             last_name="Palecek", school=None),
+        User(email="river@example.com", first_name="River",
+             last_name="Bumpas", school="Berkeley"),
+        User(email="surya@example.com", first_name="Surya",
+             last_name="Malik", school="University of Vermont")
     ]
-    
+
     for user in users:
         user.password = "password123"
         db.session.add(user)
-    
+
     db.session.commit()
-    
+
     listings = [
         Listing(
             seller_id=users[0].id,
@@ -206,9 +212,9 @@ def insert_test_data(db):
             duration=None
         )
     ]
-    
+
     for listing in listings:
         db.session.add(listing)
-    
+
     db.session.commit()
-    
+
