@@ -59,16 +59,25 @@ def listings():
     return render_template("listings.html")
 
 
-@app.route("/create-listing")
+@app.route("/create-listing", methods = ['GET', 'POST'])
 def createlisting():
-    return render_template("create_listing.html")
+    if (request.method == 'POST'):
+        # retrieve data
+        name = request.form.get('name')
+        description = request.form.get('description')
+        price = request.form.get('price')
+        images = request.files.getlist('images')
+
+        
+    if (request.method == 'GET'):
+        return render_template("create_listing.html")
 
 if __name__ == "__main__":
-    db = init_db(app)
-    # Comment out after first run
-    # insert_test_data()
 
     with app.app_context():
+        db = init_db(app)
+        # Comment out after first run
+        # insert_test_data(db=db)
         user = User.get_by_id(1)
         print(user)
         print(user.get_listings())
