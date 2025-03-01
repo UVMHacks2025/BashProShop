@@ -56,9 +56,15 @@ def signup():
         return render_template("signup.html")
 
 
+@app.route("/my-listings", methods=["GET"])
+@login_required
+def my_listings():
+    return render_template("listings.html", listings=current_user.get_listings())
+
+
 @app.route("/")
 def listings():
-    listings = Listing.get_next(0, 10, [], [Listing.post_date])
+    listings = Listing.get_next(10, [], [Listing.post_date])
     return render_template("listings.html", listings=listings)
 
 
