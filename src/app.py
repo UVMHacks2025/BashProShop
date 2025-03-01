@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 
 import sqlalchemy as sq
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, render_template
 from flask_login import (LoginManager, current_user, login_required,
                          login_user, logout_user)
 from flask_sqlalchemy import SQLAlchemy
@@ -43,17 +43,26 @@ def logout():
     logout_user()
     return jsonify({'message': 'Logged out successfully'})
 
+@app.route("/signup")
+def signup():
+    return render_template("signup.html")
 
 @app.route("/")
-def index():
-    return "Hello, World!"
+def listings():
+    listings = Listing.get_next(10, [], [Listing.post_date])
+    return render_template("listings.html", listings=listings)
 
+
+@app.route("/create-listing")
+def createlisting():
+    return render_template("create_listing.html")
 
 if __name__ == "__main__":
     db = init_db(app)
+    # Comment out after first run
     with app.app_context():
-        # Comment out after first run
-        # insert_test_data()
+        db = init_db(app)
+        # insert_test_data(db)
         user = User.get_by_id(1)
         print(user)
         print(user.get_listings())
