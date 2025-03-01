@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow-lg text-center" style="max-width: 500px;">
+        <div class="mb-4">
+            <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
+        </div>
+        <h2 class="mb-3">Payment Cancelled</h2>
+        <p class="mb-4">Your payment was cancelled. No charges were made.</p>
+        <div>
+            <a href="{{ url_for('listings.index') }}" class="btn btn-primary">Return to Listings</a>
+        </div>
+    </div>
+</main>
+{% endblock %} 

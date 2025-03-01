@@ -1,7 +1,7 @@
 import stripe
 from stripe import ErrorObject, StripeError
 import os
-from flask import current_app
+from flask import current_app, url_for, redirect
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -119,13 +119,14 @@ class StripeHandler:
                     },
                     "quantity": 1,
                 }],
-                success_url=success_url,
-                cancel_url=cancel_url,
+                success_url = url_for('payment.success', _external=True),
+                cancel_url = url_for('payment.cancel', _external=True),
             )
-            return session
+            
         except StripeError as e:
             current_app.logger.error(f"Stripe Error (create_checkout_session): {e}")
             return None
+        return redirect(session.url,code=303)
         
     def check_checkout_session(self, session_id):
         try:
